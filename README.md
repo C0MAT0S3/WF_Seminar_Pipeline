@@ -15,7 +15,7 @@ CONTROL_REP1,L004_R1_001.fastq.gz,L004_R2_001.fastq.gz,reverse
 Now, you can run the pipeline using:
 
 ```bash
-nextflow run main \
+nextflow run rna-bfjt \
     --input samplesheet.csv \
     --outdir <OUTDIR> \
     --genome GRCh37

@@ -15,6 +15,11 @@
             "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
             "installed_by": ["modules"]
           },
+          "picard/markduplicates": {
+            "branch": "master",
+            "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
+            "installed_by": ["modules"]
+          },
           "star/align": {
             "branch": "master",
             "git_sha": "30a97c755895b7dfe40a730b0695c554a10f1cdd",

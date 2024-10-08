@@ -1,0 +1,4 @@
+sample,fastq_1,fastq_2,strandedness
+CONTROL_REP1,L002_R1_001.fastq.gz,L002_R2_001.fastq.gz,auto
+CONTROL_REP1,L003_R1_001.fastq.gz,L003_R2_001.fastq.gz,forward
+CONTROL_REP1,L004_R1_001.fastq.gz,L004_R2_001.fastq.gz,reverse

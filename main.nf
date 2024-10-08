@@ -7,12 +7,15 @@ include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
 
 workflow {
 // Reading
-
+TODO
 // FastQC
-
+TODO
 // Trimming
-
+TODO
 // Aligning
-
+TODO
+// MultiQC report (optional)
+TODO
 // Markduplicates (optional)
+TODO
 }

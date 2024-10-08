@@ -15,4 +15,5 @@
 4. Quality Control after trimming (FASTQC)
 5. Download Ref. genome (NCBIGENOMEDOWNLOAD)
 6. Aligning to Ref. genome (STAR)
-7. (Mark duplicates)
+7. (MULTIQC for aggregated results)
+8. (Mark duplicates)

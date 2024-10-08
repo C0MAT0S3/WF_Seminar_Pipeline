@@ -24,7 +24,11 @@ nextflow run rna-bfjt \
 # Pipeline Output
 
 # Example
-
+Test files include:
+- M. Musculus: 1 PE read, 5,000 lines
+- C. cerevisiae:
+- H. sapiens:
+  
 # Contributions
 
 # TODO

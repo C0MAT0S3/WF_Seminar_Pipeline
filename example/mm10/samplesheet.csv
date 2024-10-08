@@ -1,2 +1,2 @@
 sample,fastq_1,fastq_2,strandedness
-CONTROL_REP1,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/mm10/fastq/mouse_single_pair_fastq_1.fastq,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/mm10/fastq/mouse_single_pair_fastq_2.fastq,auto
+CONTROL_REP1,fastq/mouse_single_pair_fastq_1.fastq,fastq/mouse_single_pair_fastq_2.fastq,auto

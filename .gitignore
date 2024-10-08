@@ -1,0 +1,67 @@
+# Nextflow specific files
+.nextflow*
+work/
+reports/
+results/
+trace.txt
+timeline.html
+dag.png
+*~ # temporary editor files
+
+# Python specific files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment files
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Virtualenv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python egg files
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Distribution / Packaging
+*.pydist/
+*.whl
+*.manifest
+*.cover
+*.egg-info/
+.installed.cfg
+
+# PyInstaller
+# Usually these files are written by a Python script from the output of pyinstaller --onefile -F
+*.spec
+
+# C extensions
+*.so
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pyre
+.pyre/
+
+# celery beat schedule file
+celerybeat-schedule
+
+# dotenv
+.env.local
+.env.*.local

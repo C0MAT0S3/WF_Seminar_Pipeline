@@ -6,7 +6,7 @@ include { PICARD_MARKDUPLICATES } from './modules/nf-core/picard/markduplicates/
 include { FASTQ_FASTQC_UMITOOLS_TRIMGALORE } from './subworkflows/nf-core/fastq_fastqc_umitools_trimgalore/main'
 include { ALIGN_STAR } from './subworkflows/local/align_star/main'
 include { PREPARE_GENOME } from './subworkflows/local/prepare_genome/main'
-
+include { fromSamplesheet                  } from 'plugin/nf-validation'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     GENOME PARAMETER VALUES
@@ -29,19 +29,17 @@ params.star_index       = getGenomeAttribute('star')
 
 workflow {
 // Reading the samplesheet file
-samplesheet_file = file(params.input)
-samplesheet_dir = samplesheet_file.parent
-
-// Read the samplesheet into a channel
-input_ch = channel.fromPath(params.input).splitCsv(header: true)
-
-// Create meta map for analyses
-reads_ch = input_ch.map { row ->
-    // Resolve relative fastq files in the samplesheet
-    def fastq1 = file("${samplesheet_dir}/${row.fastq_1}")
-    def fastq2 = file("${samplesheet_dir}/${row.fastq_2}")
-    [row.subMap("sample", "strandedness"), [fastq1, fastq2]]
-}
+Channel
+    .fromSamplesheet("input")
+    .map {
+        meta, fastq_1, fastq_2 ->
+            if (!fastq_2) {
+                return [ meta + [ single_end:true ], [ fastq_1 ] ]
+            } else {
+                return [ meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+            }
+    }
+    .set{ reads_ch }
 
 // QC
 FASTQ_FASTQC_UMITOOLS_TRIMGALORE(
@@ -81,7 +79,6 @@ ALIGN_STAR(
 // Markduplicates (optional)
 //TODO
 }
-
 
 //
 // Get attribute from genome config file e.g. fasta

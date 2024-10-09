@@ -1,12 +1,14 @@
+// Import plugins
+include { fromSamplesheet                  } from 'plugin/nf-validation'
+
 // Import modules
-include { STAR_ALIGN } from './modules/nf-core/star/align/main' 
 include { PICARD_MARKDUPLICATES } from './modules/nf-core/picard/markduplicates/main'
 
 // Import subworkflows
 include { FASTQ_FASTQC_UMITOOLS_TRIMGALORE } from './subworkflows/nf-core/fastq_fastqc_umitools_trimgalore/main'
-include { ALIGN_STAR } from './subworkflows/local/align_star/main'
 include { PREPARE_GENOME } from './subworkflows/local/prepare_genome/main'
-include { fromSamplesheet                  } from 'plugin/nf-validation'
+include { FASTQ_ALIGN_HISAT2 } from './subworkflows/nf-core/fastq_align_hisat2/main'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     GENOME PARAMETER VALUES
@@ -21,9 +23,9 @@ params.gtf              = getGenomeAttribute('gtf')
 // params.gene_bed         = getGenomeAttribute('bed12')
 // params.bbsplit_index    = getGenomeAttribute('bbsplit')
 // params.sortmerna_index  = getGenomeAttribute('sortmerna')
-params.star_index       = getGenomeAttribute('star')
+// params.star_index       = getGenomeAttribute('star')
 // params.rsem_index       = getGenomeAttribute('rsem')
-// params.hisat2_index     = getGenomeAttribute('hisat2')
+params.hisat2_index     = getGenomeAttribute('hisat2')
 // params.salmon_index     = getGenomeAttribute('salmon')
 // params.kallisto_index   = getGenomeAttribute('kallisto')
 
@@ -57,22 +59,29 @@ FASTQ_FASTQC_UMITOOLS_TRIMGALORE(
 PREPARE_GENOME(
     params.fasta,
     params.gtf,
-    params.star_index,
+    params.splicesites,
+    params.hisat2_index,
     params.gencode
 )
-PREPARE_GENOME.out.star_index.view()
 
 // Aligning
-ALIGN_STAR(
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads, // reads               // channel: [ val(meta), [ reads ] ]
-    PREPARE_GENOME.out.star_index.map { [ [:], it ] },               // channel: [ val(meta), [ index ] ]
-    PREPARE_GENOME.out.gtf.map { [ [:], it ] },                // channel: [ val(meta), [ gtf ] ]
-    false, // star_ignore_sjdbgtf // boolean: when using pre-built STAR indices do not re-extract and use splice junctions from the GTF file
-    '', // seq_platform        // string : sequencing platform
-    '', // seq_center          // string : sequencing center
-    true, // is_aws_igenome      // boolean: whether the genome files are from AWS iGenomes
-    PREPARE_GENOME.out.fasta               // channel: /path/to/fasta
+FASTQ_ALIGN_HISAT2(
+    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads, // reads       // channel: [ val(meta), [ reads ] ]
+    PREPARE_GENOME.out.hisat2_index.map { [ [:], it ] }, // index       // channel: /path/to/hisat2/index
+    PREPARE_GENOME.out.splicesites.map { [ [:], it ] }, // splicesites // channel: /path/to/genome.splicesites.txt
+    PREPARE_GENOME.out.fasta.map { [ [:], it ] } // ch_fasta    // channel: [ fasta ]
 )
+
+//ALIGN_STAR(
+//    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads, // reads               // channel: [ val(meta), [ reads ] ]
+//    PREPARE_GENOME.out.star_index.map { [ [:], it ] },               // channel: [ val(meta), [ index ] ]
+//    PREPARE_GENOME.out.gtf.map { [ [:], it ] },                // channel: [ val(meta), [ gtf ] ]
+//    false, // star_ignore_sjdbgtf // boolean: when using pre-built STAR indices do not re-extract and use splice junctions from the GTF file
+//    '', // seq_platform        // string : sequencing platform
+//    '', // seq_center          // string : sequencing center
+//    true, // is_aws_igenome      // boolean: whether the genome files are from AWS iGenomes
+//    PREPARE_GENOME.out.fasta               // channel: /path/to/fasta
+//)
 
 // MultiQC report (optional)
 //TODO

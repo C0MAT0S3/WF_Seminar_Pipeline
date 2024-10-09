@@ -17,12 +17,12 @@ include { UNTAR as UNTAR_HISAT2_INDEX       } from '../../../modules/nf-core/unt
 include { UNTAR as UNTAR_SALMON_INDEX       } from '../../../modules/nf-core/untar'
 include { UNTAR as UNTAR_KALLISTO_INDEX     } from '../../../modules/nf-core/untar'
 
-include { GFFREAD                           } from '../../../modules/nf-core/gffread'
-include { STAR_GENOMEGENERATE               } from '../../../modules/nf-core/star/genomegenerate'
+include { HISAT2_EXTRACTSPLICESITES         } from '../../../modules/nf-core/hisat2/extractsplicesites'
+include { HISAT2_BUILD                      } from '../../../modules/nf-core/hisat2/build'
 
+include { GFFREAD                           } from '../../../modules/nf-core/gffread'
 include { PREPROCESS_TRANSCRIPTS_FASTA_GENCODE } from '../../../modules/local/preprocess_transcripts_fasta_gencode'
 include { GTF_FILTER                           } from '../../../modules/local/gtf_filter'
-include { STAR_GENOMEGENERATE_IGENOMES         } from '../../../modules/local/star_genomegenerate_igenomes'
 
 workflow PREPARE_GENOME {
     take:
@@ -32,14 +32,14 @@ workflow PREPARE_GENOME {
     //additional_fasta         //      file: /path/to/additional.fasta
     //transcript_fasta         //      file: /path/to/transcript.fasta
     //gene_bed                 //      file: /path/to/gene.bed
-    //splicesites              //      file: /path/to/splicesites.txt
+    splicesites              //      file: /path/to/splicesites.txt
     //bbsplit_fasta_list       //      file: /path/to/bbsplit_fasta_list.txt
     //sortmerna_fasta_list     //      file: /path/to/sortmerna_fasta_list.txt
-    star_index               // directory: /path/to/star/index/
+    //star_index               // directory: /path/to/star/index/
     //rsem_index               // directory: /path/to/rsem/index/
     //salmon_index             // directory: /path/to/salmon/index/
     //kallisto_index           // directory: /path/to/kallisto/index/
-    //hisat2_index             // directory: /path/to/hisat2/index/
+    hisat2_index             // directory: /path/to/hisat2/index/
     //bbsplit_index            // directory: /path/to/bbsplit/index/
     //sortmerna_index          // directory: /path/to/sortmerna/index/
     gencode                  //   boolean: whether the genome is from GENCODE
@@ -89,31 +89,26 @@ workflow PREPARE_GENOME {
     }
 
     //
-    // Uncompress STAR index or generate from scratch if required
+    // Uncompress HISAT2 index or generate from scratch if required
     //
-    ch_star_index = Channel.empty()
-        if (star_index) {
-            if (star_index.endsWith('.tar.gz')) {
-                ch_star_index = UNTAR_STAR_INDEX ( [ [:], star_index ] ).untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNTAR_STAR_INDEX.out.versions)
-            } else {
-                ch_star_index = Channel.value(file(star_index))
-            }
+    ch_splicesites  = Channel.empty()
+    ch_hisat2_index = Channel.empty()
+    if (!splicesites) {
+        ch_splicesites = HISAT2_EXTRACTSPLICESITES ( ch_gtf.map { [ [:], it ] } ).txt.map { it[1] }
+        ch_versions    = ch_versions.mix(HISAT2_EXTRACTSPLICESITES.out.versions)
+    } else {
+        ch_splicesites = Channel.value(file(splicesites))
+    }
+    if (hisat2_index) {
+        if (hisat2_index.endsWith('.tar.gz')) {
+            ch_hisat2_index = UNTAR_HISAT2_INDEX ( [ [:], hisat2_index ] ).untar.map { it[1] }
+            ch_versions     = ch_versions.mix(UNTAR_HISAT2_INDEX.out.versions)
         } else {
-            // Check if an AWS iGenome has been provided to use the appropriate version of STAR
-            def is_aws_igenome = false
-            if (fasta && gtf) {
-                if ((file(fasta).getName() - '.gz' == 'genome.fa') && (file(gtf).getName() - '.gz' == 'genes.gtf')) {
-                    is_aws_igenome = true
-                }
-            }
-            if (is_aws_igenome) {
-                ch_star_index = STAR_GENOMEGENERATE_IGENOMES ( ch_fasta, ch_gtf ).index
-                ch_versions   = ch_versions.mix(STAR_GENOMEGENERATE_IGENOMES.out.versions)
-            } else {
-                ch_star_index = STAR_GENOMEGENERATE ( ch_fasta.map { [ [:], it ] }, ch_gtf.map { [ [:], it ] } ).index.map { it[1] }
-                ch_versions   = ch_versions.mix(STAR_GENOMEGENERATE.out.versions)
-            }
+            ch_hisat2_index = Channel.value(file(hisat2_index))
+        }
+    } else {
+        ch_hisat2_index = HISAT2_BUILD ( ch_fasta.map { [ [:], it ] }, ch_gtf.map { [ [:], it ] }, ch_splicesites.map { [ [:], it ] } ).index.map { it[1] }
+        ch_versions     = ch_versions.mix(HISAT2_BUILD.out.versions)
     }
 
     emit:
@@ -123,13 +118,13 @@ workflow PREPARE_GENOME {
     //gene_bed         = ch_gene_bed               // channel: path(gene.bed)
     //transcript_fasta = ch_transcript_fasta       // channel: path(transcript.fasta)
     //chrom_sizes      = ch_chrom_sizes            // channel: path(genome.sizes)
-    //splicesites      = ch_splicesites            // channel: path(genome.splicesites.txt)
+    splicesites      = ch_splicesites            // channel: path(genome.splicesites.txt)
     //bbsplit_index    = ch_bbsplit_index          // channel: path(bbsplit/index/)
     //rrna_fastas      = ch_rrna_fastas            // channel: path(sortmerna_fasta_list)
     //sortmerna_index  = ch_sortmerna_index        // channel: path(sortmerna/index/)
-    star_index       = ch_star_index             // channel: path(star/index/)
+    //star_index       = ch_star_index             // channel: path(star/index/)
     //rsem_index       = ch_rsem_index             // channel: path(rsem/index/)
-    //hisat2_index     = ch_hisat2_index           // channel: path(hisat2/index/)
+    hisat2_index     = ch_hisat2_index           // channel: path(hisat2/index/)
     //salmon_index     = ch_salmon_index           // channel: path(salmon/index/)
     //kallisto_index   = ch_kallisto_index         // channel: [ meta, path(kallisto/index/) ]
     versions         = ch_versions.ifEmpty(null) // channel: [ versions.yml ]

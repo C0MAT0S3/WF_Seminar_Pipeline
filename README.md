@@ -7,9 +7,9 @@ First, prepare a samplesheet with your input data that looks as follows:
 
 ```csv
 sample,fastq_1,fastq_2,strandedness
-CONTROL_REP1,L002_R1_001.fastq.gz,L002_R2_001.fastq.gz,auto
-CONTROL_REP1,L003_R1_001.fastq.gz,L003_R2_001.fastq.gz,forward
-CONTROL_REP1,L004_R1_001.fastq.gz,L004_R2_001.fastq.gz,reverse
+control_REP1,/path/to/fastq/files/AEG588A1_S1_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A1_S1_L002_R2_001.fastq.gz,auto
+control_REP2,/path/to/fastq/files/AEG588A2_S2_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A2_S2_L002_R2_001.fastq.gz,forward
+treatment_REP1,/path/to/fastq/files/AEG588A3_S3_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A3_S3_L002_R2_001.fastq.gz,reverse
 ```
 
 Now, you can run the pipeline using:
@@ -27,7 +27,6 @@ nextflow run rna-bfjt \
 Test files include:
 - M. Musculus: 1 PE read, 5,000 lines
 - C. cerevisiae:
-- H. sapiens:
   
 # Contributions
 
@@ -40,3 +39,15 @@ Test files include:
 6. Aligning to Ref. genome (STAR)
 7. (MULTIQC for aggregated results)
 8. (Mark duplicates)
+skip fastqc
+with umi
+skip umi extract
+skip trimming
+umi discard read
+min trimmed read
+multiqc modify
+reduce schema
+reduce methods description
+reduce schema input
+some comments
+single-end?

@@ -77,15 +77,15 @@ Channel
     }
     .set{ reads_ch }
 
-// QC
+// QC, UMI-Extraction, Adapter-Trimming
 FASTQ_FASTQC_UMITOOLS_TRIMGALORE(
-    reads_ch, // reads             // channel: [ val(meta), [ reads ] ]
-    false, // skip_fastqc       // boolean: true/false
-    false, // with_umi          // boolean: true/false
-    true, // skip_umi_extract  // boolean: true/false
-    false, // skip_trimming     // boolean: true/false
-    0, // umi_discard_read  // integer: 0, 1 or 2
-    1 // min_trimmed_reads // integer: > 0
+    reads_ch,                               // reads channel: [ val(meta), [ reads ] ]
+    params.skip_fastqc,                     // skip step boolean: true/false
+    params.with_umi,                        // reads have umi boolean: true/false
+    params.skip_umi_extract,                // skip umi extract boolean: true/false
+    params.skip_trimming,                   // skip trimming boolean: true/false
+    params.umi_discard_read,                // discard reads with umi integer: 0, 1 or 2
+    params.min_trimmed_reads                // minimum trimmed reads integer: > 0
 )
 ch_filtered_reads      = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads
 ch_fastqc_raw_multiqc  = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_zip
@@ -95,22 +95,26 @@ ch_trim_read_count     = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_read_count
 ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.versions)
 
 // Prepare Genome
-// TODO fasta empty
 PREPARE_GENOME(
-    params.fasta,
-    params.gtf,
-    params.splicesites,
-    params.hisat2_index,
-    params.gencode
+    params.fasta,                           // fasta source file: /path/to/genome.fasta
+    params.gtf,                             // gtf source file: /path/to/genome.gtf
+    params.splicesites,                     // splicesites source file: /path/to/splicesites.txt
+    params.hisat2_index                     // hisat2 index directory: /path/to/hisat2/index/
 )
+ch_hisat2_index = PREPARE_GENOME.out.hisat2_index
+ch_splicesites = PREPARE_GENOME.out.splicesites
+ch_fasta = PREPARE_GENOME.out.fasta
+ch_fai = PREPARE_GENOME.out.fai
+ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
-// Aligning
+// Alignment
 ch_hisat2_multiqc = Channel.empty()
+
 FASTQ_ALIGN_HISAT2(
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads, // reads       // channel: [ val(meta), [ reads ] ]
-    PREPARE_GENOME.out.hisat2_index.map { [ [:], it ] }, // index       // channel: /path/to/hisat2/index
-    PREPARE_GENOME.out.splicesites.map { [ [:], it ] }, // splicesites // channel: /path/to/genome.splicesites.txt
-    PREPARE_GENOME.out.fasta.map { [ [:], it ] } // ch_fasta    // channel: [ fasta ]
+    ch_filtered_reads,                      // reads channel: [ val(meta), [ reads ] ]
+    ch_hisat2_index.map { [ [:], it ] },    // index channel: /path/to/hisat2/index
+    ch_splicesites.map { [ [:], it ] },     // splicesites channel: /path/to/genome.splicesites.txt
+    ch_fasta.map { [ [:], it ] }            // fasta channel: [ fasta ]
 )
 ch_genome_bam        = FASTQ_ALIGN_HISAT2.out.bam
 ch_genome_bam_index  = FASTQ_ALIGN_HISAT2.out.bai
@@ -120,24 +124,22 @@ ch_samtools_idxstats = FASTQ_ALIGN_HISAT2.out.idxstats
 ch_hisat2_multiqc    = FASTQ_ALIGN_HISAT2.out.summary
 ch_versions = ch_versions.mix(FASTQ_ALIGN_HISAT2.out.versions)
 
-// Markduplicates (optional)
+// Markduplicates
 ch_markduplicates_multiqc = Channel.empty()
 
 BAM_MARKDUPLICATES_PICARD (
             ch_genome_bam,
-            PREPARE_GENOME.out.fasta.map { [ [:], it ] },
-            PREPARE_GENOME.out.fai.map { [ [:], it ] }
-        )
-        ch_genome_bam             = BAM_MARKDUPLICATES_PICARD.out.bam
-        ch_genome_bam_index       = BAM_MARKDUPLICATES_PICARD.out.bai
-        ch_samtools_stats         = BAM_MARKDUPLICATES_PICARD.out.stats
-        ch_samtools_flagstat      = BAM_MARKDUPLICATES_PICARD.out.flagstat
-        ch_samtools_idxstats      = BAM_MARKDUPLICATES_PICARD.out.idxstats
-        ch_markduplicates_multiqc = BAM_MARKDUPLICATES_PICARD.out.metrics
-        //if (params.bam_csi_index) {
-        //    ch_genome_bam_index = BAM_MARKDUPLICATES_PICARD.out.csi
-        //}
-        ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
+            ch_fasta.map { [ [:], it ] },
+            ch_fai.map { [ [:], it ] }
+)
+ch_genome_bam             = BAM_MARKDUPLICATES_PICARD.out.bam
+ch_genome_bam_index       = BAM_MARKDUPLICATES_PICARD.out.bai
+ch_samtools_stats         = BAM_MARKDUPLICATES_PICARD.out.stats
+ch_samtools_flagstat      = BAM_MARKDUPLICATES_PICARD.out.flagstat
+ch_samtools_idxstats      = BAM_MARKDUPLICATES_PICARD.out.idxstats
+ch_markduplicates_multiqc = BAM_MARKDUPLICATES_PICARD.out.metrics
+ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
+
 //
 // Get list of samples that failed trimming threshold for MultiQC report
 //
@@ -166,7 +168,7 @@ CUSTOM_DUMPSOFTWAREVERSIONS (
 )
 
 //
-// MultiQC report (optional)
+// MultiQC report
 //
 workflow_summary    = paramsSummaryMultiqc(summary_params)
 ch_workflow_summary = Channel.value(workflow_summary)
@@ -182,36 +184,14 @@ MULTIQC (
     ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'),
     ch_multiqc_logo.collect().ifEmpty([]),
     ch_fail_trimming_multiqc.collectFile(name: 'fail_trimmed_samples_mqc.tsv').ifEmpty([]),
-    //ch_fail_mapping_multiqc.collectFile(name: 'fail_mapped_samples_mqc.tsv').ifEmpty([]),
-    //ch_fail_strand_multiqc.collectFile(name: 'fail_strand_check_mqc.tsv').ifEmpty([]),
     ch_fastqc_raw_multiqc.collect{it[1]}.ifEmpty([]),
     ch_fastqc_trim_multiqc.collect{it[1]}.ifEmpty([]),
     ch_trim_log_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_sortmerna_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_star_multiqc.collect{it[1]}.ifEmpty([]),
     ch_hisat2_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_rsem_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_pseudo_multiqc.collect{it[1]}.ifEmpty([]),
     ch_samtools_stats.collect{it[1]}.ifEmpty([]),
     ch_samtools_flagstat.collect{it[1]}.ifEmpty([]),
     ch_samtools_idxstats.collect{it[1]}.ifEmpty([]),
     ch_markduplicates_multiqc.collect{it[1]}.ifEmpty([])
-    //ch_featurecounts_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_aligner_pca_multiqc.collect().ifEmpty([]),
-    //ch_aligner_clustering_multiqc.collect().ifEmpty([]),
-    //ch_pseudoaligner_pca_multiqc.collect().ifEmpty([]),
-    //ch_pseudoaligner_clustering_multiqc.collect().ifEmpty([]),
-    //ch_preseq_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_qualimap_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_dupradar_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_bamstat_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_inferexperiment_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_innerdistance_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_junctionannotation_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_junctionsaturation_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_readdistribution_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_readduplication_multiqc.collect{it[1]}.ifEmpty([]),
-    //ch_tin_multiqc.collect{it[1]}.ifEmpty([])
 )
 multiqc_report = MULTIQC.out.report.toList()
 }

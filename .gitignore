@@ -33,7 +33,6 @@ pip-delete-this-directory.txt
 *.egg
 *.egg-info/
 dist/
-build/
 .eggs/
 
 # Distribution / Packaging

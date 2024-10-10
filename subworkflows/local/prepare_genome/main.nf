@@ -17,6 +17,7 @@ workflow PREPARE_GENOME {
     take:
     fasta                    //      file: /path/to/genome.fasta
     gtf                      //      file: /path/to/genome.gtf
+    gff                      //      file: /path/to/genome.gff
     splicesites              //      file: /path/to/splicesites.txt
     hisat2_index             // directory: /path/to/hisat2/index/
 

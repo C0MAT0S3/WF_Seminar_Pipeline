@@ -16,32 +16,14 @@ run_modules:
   - custom_content
   - fastqc
   - cutadapt
-  - fastp
-  - sortmerna
-  - star
   - hisat2
-  - rsem
-  - salmon
-  - kallisto
   - samtools
   - picard
-  - preseq
-  - rseqc
-  - qualimap
 
 # Order of modules
 top_modules:
   - "fail_trimmed_samples"
   - "fail_mapped_samples"
-  - "fail_strand_check"
-  - "star_rsem_deseq2_pca"
-  - "star_rsem_deseq2_clustering"
-  - "star_salmon_deseq2_pca"
-  - "star_salmon_deseq2_clustering"
-  - "salmon_deseq2_pca"
-  - "salmon_deseq2_clustering"
-  - "biotype_counts"
-  - "dupradar"
 
 module_order:
   - fastqc:
@@ -77,20 +59,8 @@ sp:
   cutadapt:
     fn: "*trimming_report.txt"
 
-  fastp:
-    fn: "*.fastp.json"
-
-  sortmerna:
-    fn: "*.sortmerna.log"
-
   hisat2:
     fn: "*.hisat2.summary.log"
-
-  salmon/meta:
-    fn: "meta_info.json"
-
-  preseq:
-    fn: "*.lc_extrap.txt"
 
   samtools/stats:
     fn: "*.stats"
@@ -98,21 +68,6 @@ sp:
     fn: "*.flagstat"
   samtools/idxstats:
     fn: "*.idxstats*"
-
-  rseqc/bam_stat:
-    fn: "*.bam_stat.txt"
-  rseqc/gene_body_coverage:
-    skip: true
-  rseqc/junction_annotation:
-    fn: "*.junction_annotation.log"
-  rseqc/read_gc:
-    skip: true
-  rseqc/read_distribution:
-    fn: "*.read_distribution.txt"
-  rseqc/infer_experiment:
-    fn: "*.infer_experiment.txt"
-  rseqc/tin:
-    fn: "*.summary.txt"
 
   picard/markdups:
     fn: "*.MarkDuplicates.metrics.txt"

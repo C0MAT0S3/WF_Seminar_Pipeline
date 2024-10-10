@@ -2,7 +2,7 @@
 include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
 include { multiqcTsvFromList }                                  from './subworkflows/nf-core/fastq_qc_trim_filter_setstrandedness'
 include { paramsSummaryMultiqc }                                from './subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText }                              from './subworkflows/local/utils_nfcore_methods'
+include { getGenomeAttribute; methodsDescriptionText }          from './subworkflows/local/utils_nfcore_methods'
 
 // Import modules
 include { PICARD_MARKDUPLICATES }                               from './modules/nf-core/picard/markduplicates/main'
@@ -28,7 +28,6 @@ log.info paramsSummaryLog(workflow)
     GENOME PARAMETER VALUES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 params.fasta            = getGenomeAttribute('fasta')
 params.gff              = getGenomeAttribute('gff')
 params.gtf              = getGenomeAttribute('gtf')
@@ -39,16 +38,13 @@ params.hisat2_index     = getGenomeAttribute('hisat2')
     CONFIG FILES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 ch_multiqc_config                     = Channel.fromPath("$projectDir/multiqc_config.yml", checkIfExists: true)
 ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
 ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath(params.multiqc_logo)   : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description) : file("$projectDir/methods_description_template.yml", checkIfExists: true)
 
 def multiqc_report     = []
-def pass_mapped_reads  = [:]
 def pass_trimmed_reads = [:]
-def pass_strand_check  = [:]
 
 workflow {
 ch_versions = Channel.empty()
@@ -69,16 +65,16 @@ Channel
     .set{ reads_ch }
 
 //
-// QC, UMI-Extraction, Adapter-Trimming
+// QC, UMI extraction, Adapter trimming
 //
 FASTQ_FASTQC_UMITOOLS_TRIMGALORE(
-    reads_ch,                               // reads channel:                   [ val(meta), [ reads ] ]
-    params.skip_fastqc,                     // skip step boolean:               true/false
-    params.with_umi,                        // reads have umi boolean:          true/false
-    params.skip_umi_extract,                // skip umi extract boolean:        true/false
-    params.skip_trimming,                   // skip trimming boolean:           true/false
-    params.umi_discard_read,                // discard reads with umi integer:  0, 1 or 2
-    params.min_trimmed_reads                // minimum trimmed reads integer:   > 0
+    reads_ch,                                  // reads channel:                        [ val(meta), [ reads ] ]
+    params.skip_fastqc,                        // skip fastqc:                          true/false
+    params.with_umi,                           // enable UMI processing:                true/false
+    params.skip_umi_extract,                   // skip UMI extraction:                  true/false
+    params.skip_trimming,                      // skip adapter trimming:                true/false
+    params.umi_discard_read,                   // read to discard post UMI extraction:  0, 1 or 2
+    params.min_trimmed_reads                   // discard if trimmed reads fewer:       > 0
 )
 ch_filtered_reads      = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads
 ch_fastqc_raw_multiqc  = FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_zip
@@ -91,11 +87,11 @@ ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.versions)
 // Prepare Genome
 //
 PREPARE_GENOME(
-    params.fasta,                           // fasta source file:           /path/to/genome.fasta
-    params.gtf,                             // gtf source file:             /path/to/genome.gtf
-    params.gff,                             // gff source file:             /path/to/genome.gff
-    params.splicesites,                     // splicesites source file:     /path/to/splicesites.txt
-    params.hisat2_index                     // hisat2 index directory:      /path/to/hisat2/index/
+    params.fasta,                              // fasta source file:           /path/to/genome.fasta
+    params.gtf,                                // gtf source file:             /path/to/genome.gtf
+    params.gff,                                // gff source file:             /path/to/genome.gff
+    params.splicesites,                        // splicesites source file:     /path/to/splicesites.txt
+    params.hisat2_index                        // hisat2 index directory:      /path/to/hisat2/index/
 )
 ch_hisat2_index = PREPARE_GENOME.out.hisat2_index
 ch_splicesites = PREPARE_GENOME.out.splicesites
@@ -109,10 +105,10 @@ ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 ch_hisat2_multiqc = Channel.empty()
 
 FASTQ_ALIGN_HISAT2(
-    ch_filtered_reads,                      // reads channel:           [ val(meta), [ reads ] ]
-    ch_hisat2_index.map { [ [:], it ] },    // index channel:           /path/to/hisat2/index
-    ch_splicesites.map { [ [:], it ] },     // splicesites channel:     /path/to/genome.splicesites.txt
-    ch_fasta.map { [ [:], it ] }            // fasta channel:           [ file(fasta) ]
+    ch_filtered_reads,                         // reads channel:           [ val(meta), [ reads ] ]
+    ch_hisat2_index.map { [ [:], it ] },       // index channel:           /path/to/hisat2/index
+    ch_splicesites.map { [ [:], it ] },        // splicesites channel:     /path/to/genome.splicesites.txt
+    ch_fasta.map { [ [:], it ] }               // fasta channel:           [ file(fasta) ]
 )
 ch_genome_bam        = FASTQ_ALIGN_HISAT2.out.bam
 ch_genome_bam_index  = FASTQ_ALIGN_HISAT2.out.bai
@@ -123,22 +119,24 @@ ch_hisat2_multiqc    = FASTQ_ALIGN_HISAT2.out.summary
 ch_versions = ch_versions.mix(FASTQ_ALIGN_HISAT2.out.versions)
 
 //
-// Markduplicates
+// Markduplicates (if UMI extraction was skipped)
 //
-ch_markduplicates_multiqc = Channel.empty()
+if (!params.skip_markduplicates && !params.with_umi) {
+    ch_markduplicates_multiqc = Channel.empty()
 
-BAM_MARKDUPLICATES_PICARD (
-            ch_genome_bam,                  // bam channel:     [ val(meta), path(reads) ]
-            ch_fasta.map { [ [:], it ] },   // fasta channel:   [ path(fasta) ]
-            ch_fai.map { [ [:], it ] }      // fai channel:     [ path(fai) ]
-)
-ch_genome_bam             = BAM_MARKDUPLICATES_PICARD.out.bam
-ch_genome_bam_index       = BAM_MARKDUPLICATES_PICARD.out.bai
-ch_samtools_stats         = BAM_MARKDUPLICATES_PICARD.out.stats
-ch_samtools_flagstat      = BAM_MARKDUPLICATES_PICARD.out.flagstat
-ch_samtools_idxstats      = BAM_MARKDUPLICATES_PICARD.out.idxstats
-ch_markduplicates_multiqc = BAM_MARKDUPLICATES_PICARD.out.metrics
-ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
+    BAM_MARKDUPLICATES_PICARD (
+                ch_genome_bam,                  // bam channel:     [ val(meta), path(reads) ]
+                ch_fasta.map { [ [:], it ] },   // fasta channel:   [ path(fasta) ]
+                ch_fai.map { [ [:], it ] }      // fai channel:     [ path(fai) ]
+    )
+    ch_genome_bam             = BAM_MARKDUPLICATES_PICARD.out.bam
+    ch_genome_bam_index       = BAM_MARKDUPLICATES_PICARD.out.bai
+    ch_samtools_stats         = BAM_MARKDUPLICATES_PICARD.out.stats
+    ch_samtools_flagstat      = BAM_MARKDUPLICATES_PICARD.out.flagstat
+    ch_samtools_idxstats      = BAM_MARKDUPLICATES_PICARD.out.idxstats
+    ch_markduplicates_multiqc = BAM_MARKDUPLICATES_PICARD.out.metrics
+    ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
+}
 
 //
 // Get list of samples that failed trimming threshold for MultiQC report
@@ -161,7 +159,7 @@ ch_trim_read_count
     .set { ch_fail_trimming_multiqc }
 
 //
-// Get tools versions for MultiQC report
+// Get tool versions for MultiQC report
 //
 CUSTOM_DUMPSOFTWAREVERSIONS (
     ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -195,16 +193,4 @@ MULTIQC (
     ch_markduplicates_multiqc.collect{it[1]}.ifEmpty([])                                   
 )
 multiqc_report = MULTIQC.out.report.toList()
-}
-
-//
-// Get attribute from genome config file e.g. fasta
-//
-def getGenomeAttribute(attribute) {
-    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
-        if (params.genomes[ params.genome ].containsKey(attribute)) {
-            return params.genomes[ params.genome ][ attribute ]
-        }
-    }
-    return null
 }

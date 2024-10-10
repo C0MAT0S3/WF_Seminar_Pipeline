@@ -20,6 +20,7 @@ include { UNTAR as UNTAR_KALLISTO_INDEX     } from '../../../modules/nf-core/unt
 include { HISAT2_EXTRACTSPLICESITES         } from '../../../modules/nf-core/hisat2/extractsplicesites'
 include { HISAT2_BUILD                      } from '../../../modules/nf-core/hisat2/build'
 
+include { CUSTOM_GETCHROMSIZES              } from '../../../modules/nf-core/custom/getchromsizes'
 include { GFFREAD                           } from '../../../modules/nf-core/gffread'
 include { PREPROCESS_TRANSCRIPTS_FASTA_GENCODE } from '../../../modules/local/preprocess_transcripts_fasta_gencode'
 include { GTF_FILTER                           } from '../../../modules/local/gtf_filter'
@@ -89,6 +90,14 @@ workflow PREPARE_GENOME {
     }
 
     //
+    // Create chromosome sizes file
+    //
+    CUSTOM_GETCHROMSIZES ( ch_fasta.map { [ [:], it ] } )
+    ch_fai         = CUSTOM_GETCHROMSIZES.out.fai.map { it[1] }
+    ch_chrom_sizes = CUSTOM_GETCHROMSIZES.out.sizes.map { it[1] }
+    ch_versions    = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
+
+    //
     // Uncompress HISAT2 index or generate from scratch if required
     //
     ch_splicesites  = Channel.empty()
@@ -114,7 +123,7 @@ workflow PREPARE_GENOME {
     emit:
     fasta            = ch_fasta                  // channel: path(genome.fasta)
     gtf              = ch_gtf                    // channel: path(genome.gtf)
-    //fai              = ch_fai                    // channel: path(genome.fai)
+    fai              = ch_fai                    // channel: path(genome.fai)
     //gene_bed         = ch_gene_bed               // channel: path(gene.bed)
     //transcript_fasta = ch_transcript_fasta       // channel: path(transcript.fasta)
     //chrom_sizes      = ch_chrom_sizes            // channel: path(genome.sizes)

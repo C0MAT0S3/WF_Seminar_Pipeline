@@ -1,2 +1,2 @@
 sample,fastq_1,fastq_2,strandedness
-CONTROL_REP1,/home/tvoge/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/mm10/fastq/SRX19144486_SRR23195516_1.fastq.gz,/home/tvoge/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/mm10/fastq/SRX19144486_SRR23195516_2.fastq.gz,auto
+CONTROL_REP1,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/mm10/fastq/SRX19144486_SRR23195516_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/mm10/fastq/SRX19144486_SRR23195516_2.fastq.gz,auto

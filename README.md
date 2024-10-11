@@ -11,12 +11,12 @@ control_REP1,/path/to/fastq/files/AEG588A1_S1_L002_R1_001.fastq.gz,/path/to/fast
 control_REP2,/path/to/fastq/files/AEG588A2_S2_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A2_S2_L002_R2_001.fastq.gz,forward
 treatment_REP1,/path/to/fastq/files/AEG588A3_S3_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A3_S3_L002_R2_001.fastq.gz,reverse
 ```
-1. Make sure either Docker or Singularity is set up to be able to pull containers. You can verify their installation by running one of these commands:
+2. Make sure either Docker or Singularity is set up to be able to pull containers. You can verify their installation by running one of these commands:
 ```bash
 docker run hello-world
 singularity run library://sylabsed/examples/lolcow
 ```
-1. Now, you can run the pipeline using:
+3. Now, you can run the pipeline using:
 ```bash
 nextflow run ./rna-bfjt.nf \
     --input samplesheet.csv \

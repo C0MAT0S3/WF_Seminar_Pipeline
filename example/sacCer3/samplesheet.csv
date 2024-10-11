@@ -1,14 +1,14 @@
 sample,fastq_1,fastq_2,strandedness
-SRR6357070,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357070_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357070_2.fastq.gz,auto
-SRR6357071,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357071_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357071_2.fastq.gz,auto
-SRR6357072,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357072_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357072_2.fastq.gz,auto
-SRR6357073,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357073_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357073_2.fastq.gz,auto
-SRR6357074,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357074_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357074_2.fastq.gz,auto
-SRR6357075,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357075_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357075_2.fastq.gz,auto
-SRR6357076,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357076_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357076_2.fastq.gz,auto
-SRR6357077,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357077_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357077_2.fastq.gz,auto
-SRR6357078,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357078_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357078_2.fastq.gz,auto
-SRR6357079,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357079_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357079_2.fastq.gz,auto
-SRR6357080,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357080_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357080_2.fastq.gz,auto
-SRR6357081,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357081_1.fastq.gz,/home/c0mat0s3/MSc/SS24/Seminar/WF_Seminar_Pipeline/example/sacCer3/fastq/SRR6357081_2.fastq.gz,auto
+SRR6357070,/path/to/example/sacCer3/fastq/truncated/SRR6357070_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357070_2.fastq.gz,auto
+SRR6357071,/path/to/example/sacCer3/fastq/truncated/SRR6357071_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357071_2.fastq.gz,auto
+SRR6357072,/path/to/example/sacCer3/fastq/truncated/SRR6357072_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357072_2.fastq.gz,auto
+SRR6357073,/path/to/example/sacCer3/fastq/truncated/SRR6357073_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357073_2.fastq.gz,auto
+SRR6357074,/path/to/example/sacCer3/fastq/truncated/SRR6357074_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357074_2.fastq.gz,auto
+SRR6357075,/path/to/example/sacCer3/fastq/truncated/SRR6357075_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357075_2.fastq.gz,auto
+SRR6357076,/path/to/example/sacCer3/fastq/truncated/SRR6357076_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357076_2.fastq.gz,auto
+SRR6357077,/path/to/example/sacCer3/fastq/truncated/SRR6357077_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357077_2.fastq.gz,auto
+SRR6357078,/path/to/example/sacCer3/fastq/truncated/SRR6357078_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357078_2.fastq.gz,auto
+SRR6357079,/path/to/example/sacCer3/fastq/truncated/SRR6357079_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357079_2.fastq.gz,auto
+SRR6357080,/path/to/example/sacCer3/fastq/truncated/SRR6357080_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357080_2.fastq.gz,auto
+SRR6357081,/path/to/example/sacCer3/fastq/truncated/SRR6357081_1.fastq.gz,/path/to/example/sacCer3/fastq/truncated/SRR6357081_2.fastq.gz,auto
 

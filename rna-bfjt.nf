@@ -1,19 +1,19 @@
 // Import methods
-include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet   } from 'plugin/nf-validation'
-include { multiqcTsvFromList                                    } from './subworkflows/nf-core/fastq_qc_trim_filter_setstrandedness'
-include { paramsSummaryMultiqc                                  } from './subworkflows/nf-core/utils_nfcore_pipeline'
-include { getGenomeAttribute; methodsDescriptionText            } from './subworkflows/local/utils_nfcore_methods'
+include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet            } from 'plugin/nf-validation'
+include { multiqcTsvFromList                                             } from './subworkflows/nf-core/fastq_qc_trim_filter_setstrandedness'
+include { paramsSummaryMultiqc                                           } from './subworkflows/nf-core/utils_nfcore_pipeline'
+include { getGenomeAttribute; multiqcTsvFromList; methodsDescriptionText } from './subworkflows/local/utils_nfcore_methods'
 
 // Import modules
-include { PICARD_MARKDUPLICATES                                 } from './modules/nf-core/picard/markduplicates/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS                           } from './modules/nf-core/custom/dumpsoftwareversions/main'    
-include { MULTIQC                                               } from './modules/local/multiqc/main'                                 
+include { PICARD_MARKDUPLICATES                                          } from './modules/nf-core/picard/markduplicates/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS                                    } from './modules/nf-core/custom/dumpsoftwareversions/main'    
+include { MULTIQC                                                        } from './modules/local/multiqc/main'                                 
 
 // Import subworkflows
-include { FASTQ_FASTQC_UMITOOLS_TRIMGALORE                      } from './subworkflows/nf-core/fastq_fastqc_umitools_trimgalore/main'
-include { PREPARE_GENOME                                        } from './subworkflows/local/prepare_genome/main'
-include { FASTQ_ALIGN_HISAT2                                    } from './subworkflows/nf-core/fastq_align_hisat2/main'
-include { BAM_MARKDUPLICATES_PICARD                             } from './subworkflows/nf-core/bam_markduplicates_picard'
+include { FASTQ_FASTQC_UMITOOLS_TRIMGALORE                               } from './subworkflows/nf-core/fastq_fastqc_umitools_trimgalore/main'
+include { PREPARE_GENOME                                                 } from './subworkflows/local/prepare_genome/main'
+include { FASTQ_ALIGN_HISAT2                                             } from './subworkflows/nf-core/fastq_align_hisat2/main'
+include { BAM_MARKDUPLICATES_PICARD                                      } from './subworkflows/nf-core/bam_markduplicates_picard'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
